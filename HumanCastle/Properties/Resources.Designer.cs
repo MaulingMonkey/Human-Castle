@@ -59,5 +59,26 @@ namespace HumanCastle.Properties {
                 resourceCulture = value;
             }
         }
+        
+        internal static System.Drawing.Bitmap MMGrass {
+            get {
+                object obj = ResourceManager.GetObject("MMGrass", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap OrxyCaveMan {
+            get {
+                object obj = ResourceManager.GetObject("OrxyCaveMan", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap OrxyCaveWoman {
+            get {
+                object obj = ResourceManager.GetObject("OrxyCaveWoman", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
