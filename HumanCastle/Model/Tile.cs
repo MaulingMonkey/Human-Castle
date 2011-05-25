@@ -14,6 +14,6 @@ namespace HumanCastle.Model
 	//Flyweight to a tile declaration, which exposes more properties.
 	struct Tile
 	{
-		TileDeclaration decl;
+		public TileDeclaration decl;
 	}
 }

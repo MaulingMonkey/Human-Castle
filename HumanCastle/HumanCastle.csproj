@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HumanCastleForm.cs" />
+    <Compile Include="Model\IVector.cs" />
     <Compile Include="Model\LocalMap.cs" />
     <Compile Include="Model\Tile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
