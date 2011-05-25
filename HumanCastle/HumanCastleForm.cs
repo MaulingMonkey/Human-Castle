@@ -6,6 +6,9 @@ using HumanCastle.View;
 using SlimDX;
 using SlimDX.Direct3D9;
 using SlimDX.Windows;
+using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
 
 namespace HumanCastle {
 	[System.ComponentModel.DesignerCategory("")] // Supresses unused form designer
@@ -32,15 +35,19 @@ namespace HumanCastle {
 			base.Dispose(disposing);
 		}
 
-		void SetupDevice() {
-			Device = new Device(D3D,0,DeviceType.Hardware,Handle,CreateFlags.HardwareVertexProcessing,new PresentParameters()
+		PresentParameters PresentParameters { get {
+			return new PresentParameters()
 				{ BackBufferCount    = 1
 				, BackBufferFormat   = Format.X8R8G8B8
 				, BackBufferWidth    = ClientSize.Width
 				, BackBufferHeight   = ClientSize.Height
 				, DeviceWindowHandle = Handle
 				, Windowed           = true
-				});
+				};
+		}}
+
+		void SetupDevice() {
+			Device = new Device(D3D,0,DeviceType.Hardware,Handle,CreateFlags.HardwareVertexProcessing,PresentParameters);
 			Assets.Setup(Device);
 			RootView.Setup(Device);
 		}
@@ -50,7 +57,34 @@ namespace HumanCastle {
 			using ( Device ) {}
 		}
 
+		HashSet<Keys> HeldKeys = new HashSet<Keys>();
+
+
+		DateTime PreviousFrame = DateTime.Now;
+		float CameraPanCooldown = 0;
 		void MainLoop() {
+			var now = DateTime.Now;
+
+			var dt = (float)(now-PreviousFrame).TotalSeconds;
+			if ( dt<0 ) dt=0;
+			if ( dt>1 ) dt=1;
+			PreviousFrame = now;
+
+			CameraPanCooldown -= dt;
+			if ( new[]{Keys.Left,Keys.Right,Keys.Up,Keys.Down,Keys.PageUp,Keys.PageDown}.Any(k=>HeldKeys.Contains(k)) )
+			while ( CameraPanCooldown < 0 )
+			{
+				if ( HeldKeys.Contains(Keys.Left    ) ) --RootView.CameraFocusPosition.X;
+				if ( HeldKeys.Contains(Keys.Right   ) ) ++RootView.CameraFocusPosition.X;
+				if ( HeldKeys.Contains(Keys.Up      ) ) --RootView.CameraFocusPosition.Y;
+				if ( HeldKeys.Contains(Keys.Down    ) ) ++RootView.CameraFocusPosition.Y;
+				if ( HeldKeys.Contains(Keys.PageUp  ) ) ++RootView.CameraFocusPosition.Z;
+				if ( HeldKeys.Contains(Keys.PageDown) ) --RootView.CameraFocusPosition.Z;
+				CameraPanCooldown += 0.1f;
+			} else if ( CameraPanCooldown<0 ) {
+				CameraPanCooldown = 0f;
+			}
+
 			Device.Clear( ClearFlags.Target | ClearFlags.ZBuffer, unchecked((int)0xFF000000u), -1.0f, 0 );
 			Device.SetTransform( TransformState.Projection, Matrix.OrthoOffCenterLH( 0.5f, ClientSize.Width + 0.5f, ClientSize.Height + 0.5f, 0.5f, +1.0f, -1.0f ) );
 			Device.SetRenderState( RenderState.AlphaBlendEnable , true      );
@@ -73,16 +107,25 @@ namespace HumanCastle {
 			Device.Present();
 		}
 
-		protected override void OnKeyDown(KeyEventArgs e) {
-			switch ( e.KeyCode ) {
-			case Keys.PageUp:
-				RootView.CameraFocusPosition.Z++;
-				break;
-			case Keys.PageDown:
-				RootView.CameraFocusPosition.Z--;
-				break;
+		protected override void OnResize(EventArgs e) {
+			try {
+				if ( Device != null ) Device.Reset(PresentParameters);
+
+			} catch ( Direct3D9Exception ) {
+				TeardownDevice();
+				SetupDevice();
 			}
+
+			base.OnResize(e);
+		}
+		protected override void OnKeyDown(KeyEventArgs e) {
+			HeldKeys.Add(e.KeyCode);
 			base.OnKeyDown(e);
+		}
+
+		protected override void OnKeyUp(KeyEventArgs e) {
+			HeldKeys.Remove(e.KeyCode);
+			base.OnKeyUp(e);
 		}
 
 		[STAThread] static void Main() {
