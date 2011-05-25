@@ -48,10 +48,11 @@ namespace HumanCastle.View {
 		}
 
 		Size TileSize = new Size(8,8);
+		int  Zoom = 2;
 
 		public void Render( ViewRenderArguments args ) {
 			var device = args.Device;
-			device.SetTransform( TransformState.View, Matrix.Translation( args.Form.ClientSize.Width/2, args.Form.ClientSize.Height/2, 0 ) );
+			device.SetTransform( TransformState.View, Matrix.Scaling(Zoom,Zoom,1) * Matrix.Translation( args.Form.ClientSize.Width/2, args.Form.ClientSize.Height/2, 0 ) );
 
 			int z = CameraFocusPosition.Z;
 

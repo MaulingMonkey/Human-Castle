@@ -94,8 +94,8 @@ namespace HumanCastle {
 			Device.SetRenderState( RenderState.ZEnable          , false );
 			Device.SetRenderState( RenderState.DestinationBlend , Blend.InverseSourceAlpha );
 
-			Device.SetSamplerState( 0, SamplerState.MinFilter, TextureFilter.Linear );
-			Device.SetSamplerState( 0, SamplerState.MagFilter, TextureFilter.Linear );
+			Device.SetSamplerState( 0, SamplerState.MinFilter, TextureFilter.Point );
+			Device.SetSamplerState( 0, SamplerState.MagFilter, TextureFilter.Point );
 
 			Device.BeginScene();
 			RootView.Render( new ViewRenderArguments()
