@@ -49,9 +49,14 @@ namespace HumanCastle.Model
 			return a.X != b.X || a.Y != b.Y || a.Z != b.Z;
 		}
 
-		public int GetHashCode()
+		public override int GetHashCode()
 		{
 			return X ^ (Y * 263) + Z * 773;
+		}
+
+		public override string ToString()
+		{
+			return String.Format("{0} {1} {2}", X, Y, Z);
 		}
 	}
 }

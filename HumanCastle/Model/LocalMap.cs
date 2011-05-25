@@ -151,13 +151,22 @@ namespace HumanCastle.Model
 
 			while(open.Count != 0)
 			{
-				var lowestScore = goalScore.Min(x => x.Value);
-				var node = goalScore.Where(x => x.Value == lowestScore).First().Key;
+				double minscore = finalScore[open.First()];
+				IVector3 node = open.First();
+				foreach (var n in open)
+				{
+					if (finalScore[n] < minscore)
+					{
+						minscore = finalScore[n];
+						node = n;
+					}
+				}
 
 				if (node == end)
 				{
 					//Uhhh.
 					reconstruct(cameFrom, cameFrom[end], result);
+					result.Add(end);
 					return result;
 				}
 
@@ -166,6 +175,7 @@ namespace HumanCastle.Model
 
 				foreach (var t in passableNodes(node))
 				{
+
 					if (closed.Contains(t))
 					{
 						continue;
