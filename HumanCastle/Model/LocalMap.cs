@@ -22,8 +22,21 @@ namespace HumanCastle.Model
 
 		private Tile[, ,] tiles;
 		//LOLO, hack.
-		private TileDeclaration passableTile;
-		private TileDeclaration impassibleTile;
+		private TileDeclaration passableTile = new TileDeclaration();
+		private TileDeclaration impassibleTile = new TileDeclaration();
+		private TileDeclaration upStair = new TileDeclaration();
+		private TileDeclaration downStair = new TileDeclaration();
+
+		void createTiles()
+		{
+			passableTile.passable = true;
+
+			upStair.passable = true;
+			upStair.stairType = StairType.Up;
+
+			downStair.passable = true;
+			downStair.stairType = StairType.Down;
+		}
 
 		public LocalMap(int w, int h, int d)
 		{
@@ -32,11 +45,8 @@ namespace HumanCastle.Model
 			Depth = d;
 
 			tiles = new Tile[w, h, d];
-			passableTile = new TileDeclaration();
-			passableTile.passable = true;
 
-			impassibleTile = new TileDeclaration();
-			impassibleTile.passable = false;
+			createTiles();
 		}
 
 		//This entire constructor is lol.
@@ -52,27 +62,35 @@ namespace HumanCastle.Model
 			Depth = Convert.ToInt32(dims[2]);
 
 			tiles = new Tile[Width, Height, Depth];
-			passableTile = new TileDeclaration();
-			passableTile.passable = true;
-
-			impassibleTile = new TileDeclaration();
-			impassibleTile.passable = false;
+			createTiles();
 
 			for (int z = 0; z < Depth; ++z)
 			{
+				if (z != 0) 
+				{ 
+					reader.ReadLine(); 
+				}
+
 				for (int y = 0; y < Height; ++y)
 				{
 					string[] tileLine = reader.ReadLine().Split(' ');
 
 					for (int x = 0; x < Width; ++x)
 					{
-						if (tileLine[x] == "1")
+						switch (Convert.ToInt32(tileLine[x]))
 						{
-							tiles[x, y, z].decl = passableTile;
-						}
-						else
-						{
-							tiles[x, y, z].decl = impassibleTile;
+							case 0:
+								tiles[x, y, z].decl = impassibleTile;
+								break;
+							case 1:
+								tiles[x, y, z].decl = passableTile;
+								break;
+							case 2:
+								tiles[x, y, z].decl = upStair;
+								break;
+							case 3:
+								tiles[x, y, z].decl = downStair;
+								break;
 						}
 					}
 				}
@@ -95,6 +113,30 @@ namespace HumanCastle.Model
 		{
 			var result = new List<IVector3>();
 
+			TileDeclaration currentTile = TileAt(node);
+			if (currentTile.stairType != StairType.None)
+			{
+				if ((currentTile.stairType & StairType.Up) != 0)
+				{
+					IVector3 target = node;
+					target.Z += 1;
+					if (TileAt(target).passable)
+					{
+						result.Add(target);
+					}
+				}
+
+				if ((currentTile.stairType & StairType.Down) != 0)
+				{
+					IVector3 target = node;
+					target.Z -= 1;
+					if (TileAt(target).passable)
+					{
+						result.Add(target);
+					}
+				}
+			}
+
 			for (int x = -1; x <= 1; ++x)
 			{
 				for (int y = -1; y <= 1; ++y)
@@ -108,10 +150,14 @@ namespace HumanCastle.Model
 					target.X += x;
 					target.Y += y;
 
-					if (target.BoundedBy(IVector3.Zero, Dimensions) && 
-						TileAt(target).passable)
+					
+					if (target.BoundedBy(IVector3.Zero, Dimensions))
 					{
-						result.Add(target);
+						TileDeclaration tile = TileAt(target);
+						if (tile.passable)
+						{
+							result.Add(target);
+						}
 					}
 				}
 			}
@@ -127,6 +173,7 @@ namespace HumanCastle.Model
 			result.Add(current);
 		}
 
+		// Basic A* implementation.
 		public List<IVector3> Path(IVector3 start, IVector3 end)
 		{
 			Debug.Assert(start.BoundedBy(IVector3.Zero, Dimensions));
@@ -164,7 +211,6 @@ namespace HumanCastle.Model
 
 				if (node == end)
 				{
-					//Uhhh.
 					reconstruct(cameFrom, cameFrom[end], result);
 					result.Add(end);
 					return result;
@@ -199,7 +245,6 @@ namespace HumanCastle.Model
 
 					if (isBetter)
 					{
-						//Ummm.
 						cameFrom[t] = node;
 						goalScore[t] = score;
 						guessScore[t] = Cost(t, end);
