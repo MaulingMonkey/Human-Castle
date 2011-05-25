@@ -4,6 +4,7 @@ using System.Drawing;
 using HumanCastle.Graphics;
 using HumanCastle.Model;
 using SlimDX.Direct3D9;
+using SlimDX;
 
 namespace HumanCastle.View {
 	enum TileType { Air, Grass, Dirt } // Temporary?
@@ -33,60 +34,89 @@ namespace HumanCastle.View {
 			, 0xFFB4DBED
 			};
 
-		readonly AtmosphereRenderer2D AtmosphereRenderer2D = new AtmosphereRenderer2D();
+		readonly BatchAtmosphereRenderer2D AtmosphereRenderer2D = new BatchAtmosphereRenderer2D(); // TODO: also use for higlighting to-mine areas?
+		readonly BatchSpriteRenderer       BatchSpriteRenderer  = new BatchSpriteRenderer();
 
 		public void Setup( Device device ) {
 			AtmosphereRenderer2D.Setup(device);
+			BatchSpriteRenderer.Setup(device);
 		}
 		public void Teardown() {
 			AtmosphereRenderer2D.Teardown();
+			BatchSpriteRenderer.Teardown();
 		}
 
 		Size TileSize = new Size(8,8);
 
 		public void Render( ViewRenderArguments args ) {
 			var device = args.Device;
+			device.SetTransform( TransformState.View, Matrix.Translation( args.Form.ClientSize.Width/2, args.Form.ClientSize.Height/2, 0 ) );
 
 			int z = CameraFocusPosition.Z;
 
 			// TODO: Better view range calcs.
 			// These are inclusve.
-			int ymin = Math.Max(0,CameraFocusPosition.Y-100);
-			int xmin = Math.Max(0,CameraFocusPosition.X-100);
-			int xmax = Math.Min(LocalMap.Width -1,CameraFocusPosition.X+100);
-			int ymax = Math.Min(LocalMap.Height-1,CameraFocusPosition.Y+100);
+			int ymin = Math.Max(0,CameraFocusPosition.Y-50);
+			int xmin = Math.Max(0,CameraFocusPosition.X-50);
+			int xmax = Math.Min(LocalMap.Width -1,CameraFocusPosition.X+50);
+			int ymax = Math.Min(LocalMap.Height-1,CameraFocusPosition.Y+50);
 
-			for ( int realy=ymin ; realy<=ymax ; ++realy )
-			for ( int realx=xmin ; realx<=xmax ; ++realx )
+			for ( int tile_y=ymin ; tile_y<=ymax ; ++tile_y )
+			for ( int tile_x=xmin ; tile_x<=xmax ; ++tile_x )
 			{
 				// relative coordinates (still in tiles):
-				var ex = realx-CameraFocusPosition.X;
-				var ey = realy-CameraFocusPosition.Y;
+				var ex = tile_x-CameraFocusPosition.X;
+				var ey = tile_y-CameraFocusPosition.Y;
 
-				var tt = GetTileType(new IVector3(realx,realy,z));
+				// render location:
+				var rect = new Rectangle(TileSize.Width*ex,TileSize.Height*ey,TileSize.Width,TileSize.Height);
 
-				int atmos_z = z;
-				while ( atmos_z>=0 && GetTileType(new IVector3(realx,realy,atmos_z)) == TileType.Air ) --atmos_z;
-				if ( atmos_z == -1 ) atmos_z -= 9001;
+				var tt = GetTileType(new IVector3(tile_x,tile_y,z));
 
-				if ( z!=atmos_z ) {
-					int atmos_i = Math.Min(z-atmos_z-1,AtmosphericLayers.Count);
-					AtmosphereRenderer2D.Add( new RectangleF(TileSize.Width*ex,TileSize.Height*ey,TileSize.Width,TileSize.Height), AtmosphericLayers[atmos_i] );
+				int ground_z = z;
+				while ( ground_z>=0 && GetTileType(new IVector3(tile_x,tile_y,ground_z)) == TileType.Air ) --ground_z;
+				if ( ground_z == -1 ) ground_z -= 9001;
+
+				if ( z!=ground_z ) {
+					int atmos_i = Math.Min(z-ground_z-1,AtmosphericLayers.Count);
+					AtmosphereRenderer2D.Add( rect, AtmosphericLayers[atmos_i] );
 				}
 
-				switch ( GetTileType(new IVector3(realx,realy,z)) ) {
+				if ( ground_z>=0 ) switch ( GetTileType(new IVector3(tile_x,tile_y,ground_z)) ) {
 				case TileType.Air:
+					// render nothing
 					break;
 				case TileType.Grass:
+					BatchSpriteRenderer.Add( args.Assets.MMGrass, rect );
 					break;
 				case TileType.Dirt:
+					BatchSpriteRenderer.Add( args.Assets.MMGrass, rect );
 					break;
 				default:
-					// ???
+					BatchSpriteRenderer.Add( args.Assets.MMGrass, rect );
 					break;
 				}
 			}
 
+			foreach ( var entity in GetVisibleEntities() ) {
+				// relative coordinates (still in tiles):
+				var ex = entity.Position.X-CameraFocusPosition.X;
+				var ey = entity.Position.Y-CameraFocusPosition.Y;
+
+				// render location:
+				var rect = new Rectangle(TileSize.Width*ex,TileSize.Height*ey,TileSize.Width,TileSize.Height);
+
+				if ( entity.Position.Z <= CameraFocusPosition.Z ) switch ( entity.EntityType ) {
+				case EntityType.Guy:
+					BatchSpriteRenderer.Add( args.Assets.OrxyCaveMan  , rect );
+					break;
+				case EntityType.Gal:
+					BatchSpriteRenderer.Add( args.Assets.OrxyCaveWoman, rect );
+					break;
+				}
+			}
+
+			BatchSpriteRenderer.Render(args);
 			AtmosphereRenderer2D.Render(args);
 		}
 	}

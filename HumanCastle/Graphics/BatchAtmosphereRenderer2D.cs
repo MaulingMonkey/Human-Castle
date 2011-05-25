@@ -5,7 +5,7 @@ using SlimDX;
 using SlimDX.Direct3D9;
 
 namespace HumanCastle.Graphics {
-	class AtmosphereRenderer2D {
+	class BatchAtmosphereRenderer2D {
 		struct Vertex {
 			public Vector3 Position;
 			public uint    Diffuse;
@@ -37,6 +37,8 @@ namespace HumanCastle.Graphics {
 		IndexBuffer  IB;
 
 		public void Render( ViewRenderArguments args ) {
+			if ( Indicies.Count == 0 ) return;
+
 			var device = args.Device;
 
 			if ( VB==null || VB.Description.SizeInBytes < Vertex.Size * Verticies.Count ) {
@@ -56,6 +58,7 @@ namespace HumanCastle.Graphics {
 
 			device.SetTexture(0,null);
 			device.Indices = IB;
+			device.VertexFormat = Vertex.FVF;
 			device.SetStreamSource(0,VB,0,Vertex.Size);
 			device.DrawIndexedPrimitives(PrimitiveType.TriangleList,0,0,Verticies.Count,0,Verticies.Count/4);
 		}

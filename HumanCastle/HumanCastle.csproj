@@ -63,8 +63,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoDictionary.cs" />
     <Compile Include="Graphics\Assets.cs" />
-    <Compile Include="Graphics\AtmosphereRenderer2D.cs" />
+    <Compile Include="Graphics\BatchAtmosphereRenderer2D.cs" />
+    <Compile Include="Graphics\BatchTileRenderer.cs" />
     <Compile Include="Graphics\ViewRenderArguments.cs" />
     <Compile Include="HumanCastleForm.cs" />
     <Compile Include="Model\IVector.cs" />
