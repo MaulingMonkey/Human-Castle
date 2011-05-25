@@ -17,9 +17,6 @@ namespace HumanCastle.Model
 	class TileDeclaration
 	{
 		public bool passable = false;
-
-		//+1 if up stair; -1 if down stair
-		//More deltas might be possible; dunno.
 		public StairType stairType = StairType.None;
 	}
 

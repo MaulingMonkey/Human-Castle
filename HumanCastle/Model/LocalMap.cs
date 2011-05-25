@@ -103,7 +103,7 @@ namespace HumanCastle.Model
 			return IVector3.Dot(node, end);
 		}
 
-		private TileDeclaration TileAt(IVector3 target)
+		public TileDeclaration TileAt(IVector3 target)
 		{
 			Debug.Assert(target.BoundedBy(IVector3.Zero, Dimensions));
 			return tiles[target.X, target.Y, target.Z].decl;
