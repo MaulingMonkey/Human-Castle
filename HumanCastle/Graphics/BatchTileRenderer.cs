@@ -52,7 +52,10 @@ namespace HumanCastle.Graphics {
 				device.VertexFormat = entry.Value.RealVB.Description.FVF;
 				device.SetStreamSource( 0, entry.Value.RealVB, 0, Vertex.Size );
 				device.Indices = entry.Value.RealIB;
-				device.DrawIndexedPrimitives( PrimitiveType.TriangleList, 0, 0, entry.Value.VB.Count, 0, entry.Value.VB.Count/4 );
+				device.DrawIndexedPrimitives( PrimitiveType.TriangleList, 0, 0, entry.Value.VB.Count, 0, entry.Value.VB.Count/2 );
+
+				entry.Value.IB.Clear();
+				entry.Value.VB.Clear();
 			}
 		}
 

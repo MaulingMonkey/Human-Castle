@@ -2,10 +2,10 @@
 using System.Drawing;
 using System.Windows.Forms;
 using HumanCastle.Graphics;
-using SlimDX.Direct3D9;
-using SlimDX.Windows;
 using HumanCastle.View;
 using SlimDX;
+using SlimDX.Direct3D9;
+using SlimDX.Windows;
 
 namespace HumanCastle {
 	[System.ComponentModel.DesignerCategory("")] // Supresses unused form designer
@@ -58,6 +58,7 @@ namespace HumanCastle {
 			Device.SetRenderState( RenderState.CullMode         , Cull.None                );
 			Device.SetRenderState( RenderState.ZFunc            , Compare.GreaterEqual     );
 			Device.SetRenderState( RenderState.ZEnable          , false );
+			Device.SetRenderState( RenderState.DestinationBlend , Blend.InverseSourceAlpha );
 
 			Device.SetSamplerState( 0, SamplerState.MinFilter, TextureFilter.Linear );
 			Device.SetSamplerState( 0, SamplerState.MagFilter, TextureFilter.Linear );
@@ -70,6 +71,18 @@ namespace HumanCastle {
 				});
 			Device.EndScene();
 			Device.Present();
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e) {
+			switch ( e.KeyCode ) {
+			case Keys.PageUp:
+				RootView.CameraFocusPosition.Z++;
+				break;
+			case Keys.PageDown:
+				RootView.CameraFocusPosition.Z--;
+				break;
+			}
+			base.OnKeyDown(e);
 		}
 
 		[STAThread] static void Main() {

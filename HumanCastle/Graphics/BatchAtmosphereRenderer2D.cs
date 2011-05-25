@@ -23,9 +23,9 @@ namespace HumanCastle.Graphics {
 			Indicies.Add(i+0);
 			Indicies.Add(i+1);
 			Indicies.Add(i+2);
-			Indicies.Add(i+1);
-			Indicies.Add(i+3);
+			Indicies.Add(i+0);
 			Indicies.Add(i+2);
+			Indicies.Add(i+3);
 
 			Verticies.Add( new Vertex() { Position = new Vector3(where.Left ,where.Top   ,0), Diffuse=argb } );
 			Verticies.Add( new Vertex() { Position = new Vector3(where.Right,where.Top   ,0), Diffuse=argb } );
@@ -60,7 +60,10 @@ namespace HumanCastle.Graphics {
 			device.Indices = IB;
 			device.VertexFormat = Vertex.FVF;
 			device.SetStreamSource(0,VB,0,Vertex.Size);
-			device.DrawIndexedPrimitives(PrimitiveType.TriangleList,0,0,Verticies.Count,0,Verticies.Count/4);
+			device.DrawIndexedPrimitives(PrimitiveType.TriangleList,0,0,Verticies.Count,0,Verticies.Count/2);
+
+			Indicies.Clear();
+			Verticies.Clear();
 		}
 		public void Setup( Device device ) {
 		}

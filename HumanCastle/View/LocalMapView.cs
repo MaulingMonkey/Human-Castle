@@ -26,7 +26,8 @@ namespace HumanCastle.View {
 		}
 
 		TileType GetTileType( IVector3 xyz ) {
-			return TileType.Grass;
+			if ( xyz.Z == 0 ) return TileType.Grass;
+			return TileType.Air;
 		}
 
 		static readonly List<uint> AtmosphericLayers = new List<uint>()
@@ -75,10 +76,10 @@ namespace HumanCastle.View {
 
 				int ground_z = z;
 				while ( ground_z>=0 && GetTileType(new IVector3(tile_x,tile_y,ground_z)) == TileType.Air ) --ground_z;
-				if ( ground_z == -1 ) ground_z -= 9001;
+				if ( ground_z < 0 ) ground_z -= 9001;
 
 				if ( z!=ground_z ) {
-					int atmos_i = Math.Min(z-ground_z-1,AtmosphericLayers.Count);
+					int atmos_i = Math.Min(z-ground_z-1,AtmosphericLayers.Count-1);
 					AtmosphereRenderer2D.Add( rect, AtmosphericLayers[atmos_i] );
 				}
 
