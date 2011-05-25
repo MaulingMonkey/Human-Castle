@@ -64,11 +64,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Graphics\Assets.cs" />
+    <Compile Include="Graphics\AtmosphereRenderer2D.cs" />
+    <Compile Include="Graphics\ViewRenderArguments.cs" />
     <Compile Include="HumanCastleForm.cs" />
     <Compile Include="Model\IVector.cs" />
     <Compile Include="Model\LocalMap.cs" />
     <Compile Include="Model\Tile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="View\LocalMapView.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
