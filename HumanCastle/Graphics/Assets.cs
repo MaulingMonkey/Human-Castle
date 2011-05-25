@@ -22,7 +22,7 @@ namespace HumanCastle.Graphics {
 			var t = new Texture( device, w, h, 1, Usage.None, Format.A8R8G8B8, Pool.Managed );
 
 			var dest = t.LockRectangle(0,LockFlags.None);
-			var src  = bitmap.LockBits( new Rectangle(0,0,w,h), ImageLockMode.ReadOnly,PixelFormat.Format32bppArgb );
+			var src  = bitmap.LockBits( new Rectangle(0,0,w,h), ImageLockMode.ReadOnly,PixelFormat.Format32bppPArgb );
 			try {
 				for ( int y=0 ; y<h ; ++y ) {
 					dest.Data.Seek( y * dest.Pitch, SeekOrigin.Begin );
