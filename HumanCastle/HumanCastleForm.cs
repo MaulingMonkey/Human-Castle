@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using HumanCastle.Graphics;
 using SlimDX.Direct3D9;
 using SlimDX.Windows;
 
@@ -9,6 +10,7 @@ namespace HumanCastle {
 	class HumanCastleForm : Form {
 		Direct3D D3D;
 		Device   Device;
+		Assets   Assets = new Assets();
 
 		public HumanCastleForm() {
 			ClientSize = new Size(800,600);
@@ -35,8 +37,10 @@ namespace HumanCastle {
 				, DeviceWindowHandle = Handle
 				, Windowed           = true
 				});
+			Assets.Setup(Device);
 		}
 		void TeardownDevice() {
+			Assets.Teardown();
 			using ( Device ) {}
 		}
 
