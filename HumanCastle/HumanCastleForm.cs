@@ -5,7 +5,7 @@ using SlimDX.Direct3D9;
 using SlimDX.Windows;
 
 namespace HumanCastle {
-	[System.ComponentModel.DesignerCategory("")]
+	[System.ComponentModel.DesignerCategory("")] // Supresses unused form designer
 	class HumanCastleForm : Form {
 		Direct3D D3D;
 		Device   Device;
