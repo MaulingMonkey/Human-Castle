@@ -86,7 +86,6 @@
     <Compile Include="Graphics\BatchAtmosphereRenderer2D.cs" />
     <Compile Include="Graphics\BatchTileRenderer.cs" />
     <Compile Include="Graphics\ViewRenderArguments.cs" />
-    <Compile Include="HashSet.cs" />
     <Compile Include="HumanCastleForm.cs" />
     <Compile Include="Model\IVector.cs" />
     <Compile Include="Model\LocalMap.cs" />
