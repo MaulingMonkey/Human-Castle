@@ -1,19 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using SlimDX;
 using SlimDX.Direct3D9;
 
+using Vertex = HumanCastle.Graphics.VertexXYZ_Diffuse;
+
 namespace HumanCastle.Graphics {
 	class BatchAtmosphereRenderer2D {
-		struct Vertex {
-			public Vector3 Position;
-			public uint    Diffuse;
-
-			public static readonly VertexFormat FVF = VertexFormat.Position | VertexFormat.Diffuse;
-			public static readonly int Size = Marshal.SizeOf(typeof(Vertex));
-		}
-
 		readonly List<Vertex> Verticies = new List<Vertex>();
 		readonly List<int   > Indicies  = new List<int>();
 

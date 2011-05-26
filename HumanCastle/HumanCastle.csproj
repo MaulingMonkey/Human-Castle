@@ -85,6 +85,8 @@
     <Compile Include="Graphics\Assets.cs" />
     <Compile Include="Graphics\BatchAtmosphereRenderer2D.cs" />
     <Compile Include="Graphics\BatchTileRenderer.cs" />
+    <Compile Include="Graphics\VertexXYZ_Diffuse.cs" />
+    <Compile Include="Graphics\VertexXYZ_UV.cs" />
     <Compile Include="Graphics\ViewRenderArguments.cs" />
     <Compile Include="HumanCastleForm.cs" />
     <Compile Include="Model\IVector.cs" />

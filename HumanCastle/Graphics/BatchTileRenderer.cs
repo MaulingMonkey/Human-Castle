@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using SlimDX.Direct3D9;
 
+using Vertex = HumanCastle.Graphics.VertexXYZ_UV;
+
 namespace HumanCastle.Graphics {
 	class BatchSpriteRenderer {
 		Device Device;
@@ -81,16 +83,6 @@ namespace HumanCastle.Graphics {
 				if ( RealIB != null ) RealIB.Dispose(); RealIB = null;
 				if ( RealVB != null ) RealVB.Dispose(); RealVB = null;
 			}
-		}
-
-		struct Vertex {
-			public float X,Y,Z;
-			public float U,V;
-
-			public Vertex( float x, float y, float z, float u, float v ) { X=x; Y=y; Z=z; U=u; V=v; }
-
-			public static readonly int Size = Marshal.SizeOf(typeof(Vertex));
-			public static readonly VertexFormat FVF = VertexFormat.Position | VertexFormat.Texture1;
 		}
 	}
 }
