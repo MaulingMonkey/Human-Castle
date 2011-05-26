@@ -90,8 +90,10 @@
     <Compile Include="HumanCastleForm.cs" />
     <Compile Include="Model\IVector.cs" />
     <Compile Include="Model\LocalMap.cs" />
+    <Compile Include="Model\Material.cs" />
     <Compile Include="Model\Tile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\Bit.cs" />
     <Compile Include="View\LocalMapView.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

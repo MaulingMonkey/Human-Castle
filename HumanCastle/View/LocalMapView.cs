@@ -16,7 +16,7 @@ namespace HumanCastle.View {
 	}
 
 	class LocalMapView {
-		public LocalMap LocalMap = new LocalMap(128,128,64);
+		public LocalMap LocalMap;
 
 		public IVector3 CameraFocusPosition = new IVector3(15,0,0);
 
@@ -38,10 +38,16 @@ namespace HumanCastle.View {
 		readonly BatchAtmosphereRenderer2D AtmosphereRenderer2D = new BatchAtmosphereRenderer2D(); // TODO: also use for higlighting to-mine areas?
 		readonly BatchSpriteRenderer       BatchSpriteRenderer  = new BatchSpriteRenderer();
 
+		public LocalMapView(Assets assets)
+		{
+			LocalMap = new LocalMap(128, 128, 32, assets);
+		}
+
 		public void Setup( Device device ) {
 			AtmosphereRenderer2D.Setup(device);
 			BatchSpriteRenderer.Setup(device);
 		}
+
 		public void Teardown() {
 			AtmosphereRenderer2D.Teardown();
 			BatchSpriteRenderer.Teardown();
@@ -50,7 +56,8 @@ namespace HumanCastle.View {
 		Size TileSize = new Size(8,8);
 		int  Zoom = 2;
 
-		public void Render( ViewRenderArguments args ) {
+		public void Render( ViewRenderArguments args ) 
+		{
 			var device = args.Device;
 			device.SetTransform( TransformState.View, Matrix.Scaling(Zoom,Zoom,1) * Matrix.Translation( args.Form.ClientSize.Width/2, args.Form.ClientSize.Height/2, 0 ) );
 
@@ -64,39 +71,36 @@ namespace HumanCastle.View {
 			int ymax = Math.Min(LocalMap.Height-1,CameraFocusPosition.Y+50);
 
 			for ( int tile_y=ymin ; tile_y<=ymax ; ++tile_y )
-			for ( int tile_x=xmin ; tile_x<=xmax ; ++tile_x )
 			{
-				// relative coordinates (still in tiles):
-				var ex = tile_x-CameraFocusPosition.X;
-				var ey = tile_y-CameraFocusPosition.Y;
+				for ( int tile_x=xmin ; tile_x<=xmax ; ++tile_x )
+				{
+					// relative coordinates (still in tiles):
+					var ex = tile_x-CameraFocusPosition.X;
+					var ey = tile_y-CameraFocusPosition.Y;
 
-				// render location:
-				var rect = new Rectangle(TileSize.Width*ex,TileSize.Height*ey,TileSize.Width,TileSize.Height);
+					// render location:
+					var rect = new Rectangle(TileSize.Width*ex,TileSize.Height*ey,TileSize.Width,TileSize.Height);
 
-				var tt = GetTileType(new IVector3(tile_x,tile_y,z));
+					var tt = GetTileType(new IVector3(tile_x,tile_y,z));
 
-				int ground_z = z;
-				while ( ground_z>=0 && GetTileType(new IVector3(tile_x,tile_y,ground_z)) == TileType.Air ) --ground_z;
-				if ( ground_z < 0 ) ground_z -= 9001;
+					int ground_z = z;
+					while ( ground_z>=0 && GetTileType(new IVector3(tile_x,tile_y,ground_z)) == TileType.Air ) --ground_z;
+					if ( ground_z < 0 ) ground_z -= 9001;
 
-				if ( z!=ground_z ) {
-					int atmos_i = Math.Min(z-ground_z-1,AtmosphericLayers.Count-1);
-					AtmosphereRenderer2D.Add( rect, AtmosphericLayers[atmos_i] );
-				}
+					if ( z!=ground_z ) {
+						int atmos_i = Math.Min(z-ground_z-1,AtmosphericLayers.Count-1);
+						AtmosphereRenderer2D.Add( rect, AtmosphericLayers[atmos_i] );
+					}
 
-				if ( ground_z>=0 ) switch ( GetTileType(new IVector3(tile_x,tile_y,ground_z)) ) {
-				case TileType.Air:
-					// render nothing
-					break;
-				case TileType.Grass:
-					BatchSpriteRenderer.Add( args.Assets.MMGrass, rect );
-					break;
-				case TileType.Dirt:
-					BatchSpriteRenderer.Add( args.Assets.MMGrass, rect );
-					break;
-				default:
-					BatchSpriteRenderer.Add( args.Assets.MMGrass, rect );
-					break;
+					Assets assets = args.Assets;
+					if (ground_z >= 0)
+					{
+						Tile tile = LocalMap[tile_x, tile_y, ground_z];
+						if (assets.TextureForMaterial(tile.Declaration.Material) != null)
+						{
+							BatchSpriteRenderer.Add(assets.TextureForMaterial(tile.Declaration.Material), rect);
+						}
+					}
 				}
 			}
 

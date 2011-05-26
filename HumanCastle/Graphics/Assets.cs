@@ -36,6 +36,12 @@ namespace HumanCastle.Graphics {
 			return t;
 		}
 
+		//Map A material declaration to a texture.
+		public Texture TextureForMaterial(Model.Material material)
+		{
+			return material.Texture;
+		}
+
 		public void Setup( Device device ) {
 			foreach ( var p in typeof(Assets).GetProperties( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ) ) {
 				var bitmap = typeof(Resources).GetProperty(p.Name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static).GetValue(null,null) as Bitmap;

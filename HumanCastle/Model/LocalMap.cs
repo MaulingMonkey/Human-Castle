@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 using SlimDX;
 using System.IO;
+using HumanCastle.Graphics;
 
 namespace HumanCastle.Model
 {
@@ -22,23 +23,23 @@ namespace HumanCastle.Model
 
 		private Tile[, ,] tiles;
 		//LOLO, hack.
-		private TileDeclaration passableTile = new TileDeclaration();
-		private TileDeclaration impassibleTile = new TileDeclaration();
+		private TileDeclaration basicTile = new TileDeclaration();
 		private TileDeclaration upStair = new TileDeclaration();
 		private TileDeclaration downStair = new TileDeclaration();
+		private TileDeclaration airTile = new TileDeclaration();
 
-		void createTiles()
+		void createTiles(Assets assets)
 		{
-			passableTile.passable = true;
+			basicTile.Material.Texture = assets.MMGrass;
 
-			upStair.passable = true;
-			upStair.stairType = StairType.Up;
+			upStair.StairType = StairType.Up;
+			upStair.Material.Texture = assets.MMGrass;
 
-			downStair.passable = true;
-			downStair.stairType = StairType.Down;
+			downStair.StairType = StairType.Down;
+			downStair.Material.Texture = assets.MMGrass;
 		}
 
-		public LocalMap(int w, int h, int d)
+		public LocalMap(int w, int h, int d, Assets assets)
 		{
 			Width = w; 
 			Height = h;
@@ -46,11 +47,24 @@ namespace HumanCastle.Model
 
 			tiles = new Tile[w, h, d];
 
-			createTiles();
+			createTiles(assets);
+
+			for (int z = 0; z < d; ++z)
+			{
+				TileDeclaration decl = (z == 0 ? basicTile : airTile);
+				for (int y = 0; y < h; ++y)
+				{
+					for (int x = 0; x < w; ++x)
+					{
+						tiles[x, y, z].IsPassable = true;
+						tiles[x, y, z].Declaration = decl;
+					}
+				}
+			}
 		}
 
 		//This entire constructor is lol.
-		public LocalMap(Stream file)
+		public LocalMap(Stream file, Assets assets)
 		{
 			StreamReader reader = new StreamReader(file);
 			string line = reader.ReadLine();
@@ -62,7 +76,7 @@ namespace HumanCastle.Model
 			Depth = Convert.ToInt32(dims[2]);
 
 			tiles = new Tile[Width, Height, Depth];
-			createTiles();
+			createTiles(assets);
 
 			for (int z = 0; z < Depth; ++z)
 			{
@@ -80,16 +94,20 @@ namespace HumanCastle.Model
 						switch (Convert.ToInt32(tileLine[x]))
 						{
 							case 0:
-								tiles[x, y, z].decl = impassibleTile;
+								tiles[x, y, z].Declaration = basicTile;
+								tiles[x, y, z].IsPassable = false;
 								break;
 							case 1:
-								tiles[x, y, z].decl = passableTile;
+								tiles[x, y, z].Declaration = basicTile;
+								tiles[x, y, z].IsPassable = true;
 								break;
 							case 2:
-								tiles[x, y, z].decl = upStair;
+								tiles[x, y, z].Declaration = upStair;
+								tiles[x, y, z].IsPassable = true;
 								break;
 							case 3:
-								tiles[x, y, z].decl = downStair;
+								tiles[x, y, z].Declaration = downStair;
+								tiles[x, y, z].IsPassable = true;
 								break;
 						}
 					}
@@ -97,40 +115,47 @@ namespace HumanCastle.Model
 			}
 		}
 
-		//Distance estimator <_<
+		public Tile this[IVector3 i]
+		{
+			get { return this[i.X, i.Y, i.Z]; }
+			set { this[i.X, i.Y, i.Z] = value; }
+		}
+
+		public Tile this[int x, int y, int z]
+		{
+			get { return tiles[x, y, z]; }
+			set { tiles[x, y, z] = value; }
+		}
+
 		private double Cost(IVector3 node, IVector3 end)
 		{
 			return IVector3.Dot(node, end);
 		}
 
-		public TileDeclaration TileAt(IVector3 target)
-		{
-			Debug.Assert(target.BoundedBy(IVector3.Zero, Dimensions));
-			return tiles[target.X, target.Y, target.Z].decl;
-		}
-
-		private List<IVector3> passableNodes(IVector3 node)
+		private List<IVector3> PassableNodes(IVector3 node)
 		{
 			var result = new List<IVector3>();
 
-			TileDeclaration currentTile = TileAt(node);
-			if (currentTile.stairType != StairType.None)
+			Tile currentTile = this[node];
+			TileDeclaration decl = currentTile.Declaration;
+
+			if (decl.StairType != StairType.None)
 			{
-				if ((currentTile.stairType & StairType.Up) != 0)
+				if ((decl.StairType & StairType.Up) != 0)
 				{
 					IVector3 target = node;
 					target.Z += 1;
-					if (TileAt(target).passable)
+					if (this[target].IsPassable)
 					{
 						result.Add(target);
 					}
 				}
 
-				if ((currentTile.stairType & StairType.Down) != 0)
+				if ((decl.StairType & StairType.Down) != 0)
 				{
 					IVector3 target = node;
 					target.Z -= 1;
-					if (TileAt(target).passable)
+					if (this[target].IsPassable)
 					{
 						result.Add(target);
 					}
@@ -153,8 +178,8 @@ namespace HumanCastle.Model
 					
 					if (target.BoundedBy(IVector3.Zero, Dimensions))
 					{
-						TileDeclaration tile = TileAt(target);
-						if (tile.passable)
+						Tile tile = this[target];
+						if (tile.IsPassable)
 						{
 							result.Add(target);
 						}
@@ -164,11 +189,11 @@ namespace HumanCastle.Model
 			return result;
 		}
 
-		public void reconstruct(Dictionary<IVector3, IVector3> camefrom, IVector3 current, List<IVector3> result)
+		private void Reconstruct(Dictionary<IVector3, IVector3> camefrom, IVector3 current, List<IVector3> result)
 		{
 			if (camefrom.ContainsKey(current))
 			{
-				reconstruct(camefrom, camefrom[current], result);
+				Reconstruct(camefrom, camefrom[current], result);
 			}
 			result.Add(current);
 		}
@@ -211,7 +236,7 @@ namespace HumanCastle.Model
 
 				if (node == end)
 				{
-					reconstruct(cameFrom, cameFrom[end], result);
+					Reconstruct(cameFrom, cameFrom[end], result);
 					result.Add(end);
 					return result;
 				}
@@ -219,7 +244,7 @@ namespace HumanCastle.Model
 				open.Remove(node);
 				closed.Add(node);
 
-				foreach (var t in passableNodes(node))
+				foreach (var t in PassableNodes(node))
 				{
 
 					if (closed.Contains(t))

@@ -16,8 +16,7 @@ namespace HumanCastle {
 		Direct3D D3D;
 		Device   Device;
 		Assets   Assets = new Assets();
-
-		LocalMapView RootView = new LocalMapView();
+		LocalMapView RootView;
 
 		public HumanCastleForm() {
 			ClientSize = new Size(800,600);
@@ -49,6 +48,8 @@ namespace HumanCastle {
 		void SetupDevice() {
 			Device = new Device(D3D,0,DeviceType.Hardware,Handle,CreateFlags.HardwareVertexProcessing,PresentParameters);
 			Assets.Setup(Device);
+
+			RootView = new LocalMapView(Assets);
 			RootView.Setup(Device);
 		}
 		void TeardownDevice() {
@@ -62,7 +63,8 @@ namespace HumanCastle {
 
 		DateTime PreviousFrame = DateTime.Now;
 		float CameraPanCooldown = 0;
-		void MainLoop() {
+		void MainLoop() 
+		{
 			var now = DateTime.Now;
 
 			var dt = (float)(now-PreviousFrame).TotalSeconds;
