@@ -35,25 +35,10 @@ namespace HumanCastle.Graphics {
 			foreach ( var entry in Texture ) {
 				if ( entry.Value.IB.Count == 0 ) return;
 
-				if ( entry.Value.RealVB==null || entry.Value.RealVB.Description.SizeInBytes < Vertex.Size * entry.Value.VB.Count ) {
-					using ( entry.Value.RealVB ) {}
-					using ( entry.Value.RealIB ) {}
-					entry.Value.RealVB = new VertexBuffer( device, Vertex.Size * entry.Value.VB.Count, Usage.None, Vertex.FVF, Pool.Managed );
-					entry.Value.RealIB = new IndexBuffer(  device, sizeof(uint)* entry.Value.IB.Count, Usage.None, Pool.Managed, false );
-				}
-
-				var vb = entry.Value.RealVB.Lock(0,0,LockFlags.None);
-				vb.WriteRange(entry.Value.VB.ToArray());
-				entry.Value.RealVB.Unlock();
-
-				var ib = entry.Value.RealIB.Lock(0,0,LockFlags.None);
-				ib.WriteRange(entry.Value.IB.ToArray());
-				entry.Value.RealIB.Unlock();
-
 				device.SetTexture( 0, entry.Key.Texture );
-				device.VertexFormat = entry.Value.RealVB.Description.FVF;
-				device.SetStreamSource( 0, entry.Value.RealVB, 0, Vertex.Size );
-				device.Indices = entry.Value.RealIB;
+				device.VertexFormat = entry.Value.VB.FVF;
+				device.SetStreamSource( 0, entry.Value.VB.RenderVB(device), 0, Vertex.Size );
+				device.Indices = entry.Value.IB.RenderIB(device);
 				device.DrawIndexedPrimitives( PrimitiveType.TriangleList, 0, 0, entry.Value.VB.Count, 0, entry.Value.VB.Count/2 );
 
 				entry.Value.IB.Clear();
@@ -73,15 +58,12 @@ namespace HumanCastle.Graphics {
 		}
 
 		class PerTextureInfo : IDisposable {
-			public readonly List<Vertex> VB = new List<Vertex>();
-			public readonly List<uint  > IB = new List<uint>();
-
-			public IndexBuffer  RealIB;
-			public VertexBuffer RealVB;
+			public readonly DynamicVertexBuffer<Vertex> VB = new DynamicVertexBuffer<Vertex>();
+			public readonly DynamicIndexBuffer          IB = new DynamicIndexBuffer();
 
 			public void Dispose() {
-				if ( RealIB != null ) RealIB.Dispose(); RealIB = null;
-				if ( RealVB != null ) RealVB.Dispose(); RealVB = null;
+				using ( VB ) {}
+				using ( IB ) {}
 			}
 		}
 	}
